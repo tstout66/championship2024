@@ -29,7 +29,6 @@ fn movement(
     if keys.pressed(KeyCode::KeyW){
         for mut camera_transform in camera_transform.iter_mut() {
             camera_transform.translation.y += 1.0;
-            println!("{}", camera_transform.translation.y);
         }
 
     }

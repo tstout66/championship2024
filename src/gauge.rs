@@ -1,14 +1,15 @@
-﻿use bevy::app::Plugin;
-use bevy::asset::Assets;
-use bevy::color::Color;
+﻿use std::time::Duration;
 use bevy::prelude::*;
-use noise::{NoiseFn, Perlin, Curve};
+use perlin_noise::PerlinNoise;
 
 pub struct GaugePlugin;
 
 #[derive(Component)]
 pub struct Gauge {
-    pub curve_perlin: noise::Curve<T, Source, DIM>,
+    pub timer: Timer,
+    pub wind_vec: Vec2,
+    pub wind_seed: Vec2,
+    pub perlin: PerlinNoise,
 }
 
 impl Plugin for GaugePlugin {
@@ -33,23 +34,35 @@ fn text_ui(mut commands: Commands) {
 
 fn spawn_gauge(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    // mut meshes: ResMut<Assets<Mesh>>,
+    // mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let color = Color::hsl(180., 0.95, 0.7);
 
     commands.spawn((
         Gauge{
-            perlin: Perlin::default()
+            timer: Timer::new(Duration::from_secs_f32(0.1), TimerMode::Repeating),
+            wind_vec: Vec2::ZERO,
+            wind_seed: Vec2{x: rand::random::<f32>(), y: rand::random::<f32>()},
+            perlin: PerlinNoise::new()
         },
-        Mesh2d(meshes.add(Rectangle::new(100.0, 100.0))),
-        MeshMaterial2d(materials.add(color)),
+        // Mesh2d(meshes.add(Rectangle::new(100.0, 100.0))),
+        // MeshMaterial2d(materials.add(color)),
     ));
 }
 
 fn update_wind(
-    wind_gauge_perlin: Single<&Gauge>,
+    mut gauge: Single<&mut Gauge>,
+    mut text: Single<&mut Text>,
+    time: Res<Time>,
 ) {
-    println!("{:.32}", wind_gauge_perlin.perlin.get([3.0, 3.0, 4.0]));
+    gauge.timer.tick(time.delta());
+    if gauge.timer.just_finished() {
+        gauge.wind_seed += 0.01;
+        gauge.wind_vec.x = gauge.perlin.get(gauge.wind_seed.x as f64) as f32 - 0.5;
+        gauge.wind_vec.y = gauge.perlin.get(gauge.wind_seed.y as f64) as f32 - 0.5;
+        text.0 = format!("Wind Direction: {}", gauge.wind_vec);
+    }
+
 }
 
