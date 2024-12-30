@@ -58,11 +58,10 @@ fn update_wind(
 ) {
     gauge.timer.tick(time.delta());
     if gauge.timer.just_finished() {
-        gauge.wind_seed += 0.01;
+        gauge.wind_seed += 1.0;
         gauge.wind_vec.x = gauge.perlin.get(gauge.wind_seed.x as f64) as f32 - 0.5;
         gauge.wind_vec.y = gauge.perlin.get(gauge.wind_seed.y as f64) as f32 - 0.5;
         text.0 = format!("Wind Direction: {}", gauge.wind_vec);
     }
-
 }
 
