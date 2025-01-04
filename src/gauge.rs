@@ -3,13 +3,15 @@ use perlin_noise::PerlinNoise;
 use rand::Rng;
 use std::time::Duration;
 
-const MOVEMENT_FACTOR: f32 = 200.0;
+const GAUGE_LENGTH: f32 = 200.0;
 
 pub struct GaugePlugin;
 
 impl Plugin for GaugePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_gauge, spawn_timer))
+        app
+            .add_systems(Startup, spawn_gauge)
+            .add_systems(Startup, spawn_timer)
             //.add_systems(Startup, text_ui)
             .add_systems(Update, update_wind)
             .add_systems(Update, move_with_wind);
@@ -60,7 +62,7 @@ fn spawn_timer(mut commands: Commands) {
 }
 
 fn spawn_gauge(mut commands: Commands) {
-    let color = Color::hsla(180., 0.95, 0.7, 0.1);
+    let color = Color::hsla(180., 0.95, 0.7, 0.08);
 
     for y in -10..10 {
         for x in -10..10 {
@@ -79,7 +81,7 @@ fn spawn_gauge(mut commands: Commands) {
             commands.spawn((
                 Sprite {
                     color,
-                    custom_size: Some(Vec2::new(5.0, 5.0)),
+                    custom_size: Some(Vec2::new(2.0, 2.0)),
                     ..default()
                 },
                 Transform::from_xyz(50. * x as f32, 50. * y as f32, 50.),
@@ -89,7 +91,7 @@ fn spawn_gauge(mut commands: Commands) {
 }
 
 fn update_wind(
-    mut gauge: Query<(&mut Gauge)>,
+    mut gauge: Query<&mut Gauge>,
     //mut text: Single<&mut Text>,
     mut wind: ResMut<Wind>,
     time: Res<Time>,
@@ -122,7 +124,7 @@ fn move_with_wind(
 ) {
     if wind_timer.timer.just_finished() {
         for (gauge, mut transform, mut sprite) in &mut query {
-            let extended_vector = gauge.wind_vec.extend(0.0) * MOVEMENT_FACTOR;
+            let extended_vector = gauge.wind_vec.extend(0.0) * GAUGE_LENGTH;
             let length = transform
                 .translation
                 .distance(transform.translation + extended_vector);
@@ -131,8 +133,8 @@ fn move_with_wind(
 
             transform.rotation = Quat::from_rotation_z(theta);
             transform.translation =
-                gauge.pos.extend(0.0) + transform.local_x().as_vec3() * length / 2.0;
-            sprite.custom_size = Some(Vec2::new(length, 2.0));
+                gauge.pos.extend(0.0) - transform.local_x().as_vec3() * length / 2.0;
+            sprite.custom_size = Some(Vec2::new(length, 1.0));
         }
     }
 }
