@@ -1,3 +1,5 @@
+#![feature(slice_range)]
+
 mod gauge;
 mod player_camera;
 
