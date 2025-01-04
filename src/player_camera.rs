@@ -1,16 +1,18 @@
 ﻿use bevy::prelude::*;
 use crate::gauge::Gauge;
 
-#[derive(Component)]
-pub struct PlayerCamera;
+pub struct PlayerCameraPlugin;
 
-impl Plugin for PlayerCamera {
+impl Plugin for PlayerCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_camera)
             .add_systems(PreUpdate, movement);
     }
 
 }
+
+#[derive(Component)]
+pub struct PlayerCamera;
 
 fn spawn_camera(
     mut commands: Commands,
