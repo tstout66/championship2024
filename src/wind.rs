@@ -3,6 +3,8 @@ use bevy::prelude::*;
 use perlin_noise::PerlinNoise;
 use rand::Rng;
 
+const WIND_PERLIN_SCALE: f32 = 10000.0;
+
 pub struct WindPlugin;
 
 impl Plugin for WindPlugin {
@@ -34,13 +36,13 @@ fn setup(mut commands: Commands) {
             rng.gen_range::<f32>(0.0, 1.0),
             rng.gen_range::<f32>(0.0, 1.0),
         ),
-        scale: 1000.0,
+        scale: WIND_PERLIN_SCALE,
     });
 }
 
 fn update(time: Res<Time>, mut wind: ResMut<Wind>) {
     wind.timer.tick(time.delta());
     if wind.timer.just_finished() {
-        wind.offset += Vec2::new(0.01, 0.01);
+        wind.offset += Vec2::new(0.001, 0.001);
     }
 }

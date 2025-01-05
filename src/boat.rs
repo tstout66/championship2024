@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use crate::wind::Wind;
 
+const BASE_BOAT_SPEED: f32 = 25.0;
+
 pub struct BoatPlugin;
 
 impl Plugin for BoatPlugin {
@@ -24,7 +26,7 @@ fn setup(mut commands: Commands) {
     let color = Color::WHITE;
     commands.spawn((
         Boat{
-           speed: 0.0, 
+           speed: BASE_BOAT_SPEED,
         },
         Transform::from_xyz(0., 0., 0.),
         Sprite {
@@ -65,7 +67,7 @@ fn setup(mut commands: Commands) {
 //         for mut boat in boats.iter_mut() {
 //             let projected_x_pos = (boat.translation.x / wind.scale) as f64;
 //             let projected_y_pos = (boat.translation.y / wind.scale) as f64;
-// 
+//
 //             boat.translation.x += (wind.perlin_x.get2d([
 //                 projected_x_pos + wind.offset.x as f64,
 //                 projected_y_pos + wind.offset.y as f64,
@@ -82,6 +84,7 @@ fn setup(mut commands: Commands) {
 
 fn wind_effects(
     mut boats: Query<&mut Transform, With<Boat>>,
+    boat_sails: Query<&BoatSail>,
     wind: Res<Wind>,
 ) {
     if wind.timer.just_finished() {
@@ -121,17 +124,23 @@ fn sail_control (
 }
 
 fn boat_control (
-    mut boats: Query<&mut Transform, With<Boat>>,
+    mut boats: Query<(&mut Transform, &Boat)>,
     keys: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
 ) {
     if keys.pressed(KeyCode::KeyA){
-        for mut transform in boats.iter_mut() {
+        for (mut transform, boat) in boats.iter_mut() {
             transform.rotate_local_z(0.01);
         }
     }
     if keys.pressed(KeyCode::KeyD){
-        for mut transform in boats.iter_mut() {
+        for (mut transform, boat) in boats.iter_mut() {
             transform.rotate_local_z(-0.01);
         }
     }
+    for (mut transform, boat) in boats.iter_mut() {
+        let direction = transform.local_y();
+        transform.translation += direction * boat.speed * time.delta_secs();
+    }
+
 }
