@@ -1,7 +1,5 @@
 ﻿use bevy::prelude::*;
-use perlin_noise::PerlinNoise;
-use rand::Rng;
-use std::time::Duration;
+use crate::wind::Wind;
 
 const GAUGE_LENGTH: f32 = 200.0;
 
@@ -10,22 +8,14 @@ pub struct GaugePlugin;
 impl Plugin for GaugePlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Startup, spawn_gauge)
-            .add_systems(Startup, spawn_timer)
+            .add_systems(Startup, setup)
+            //.add_systems(Startup, spawn_timer)
             //.add_systems(Startup, text_ui)
-            .add_systems(Update, update_wind)
+            .add_systems(Update, update_with_wind)
             .add_systems(Update, move_with_wind);
     }
 }
 
-#[derive(Resource)]
-pub struct Wind {
-    pub timer: Timer,
-    pub perlin_x: PerlinNoise,
-    pub perlin_y: PerlinNoise,
-    pub offset: Vec2,
-    pub scale: f32,
-}
 
 #[derive(Component)]
 pub struct Gauge {
@@ -34,34 +24,20 @@ pub struct Gauge {
     //pub wind_seed: Vec2,
 }
 
-fn text_ui(mut commands: Commands) {
-    commands.spawn((
-        Text::new("Test"),
-        Node {
-            position_type: PositionType::Absolute,
-            bottom: Val::Px(50.0),
-            left: Val::Px(50.0),
-            ..default()
-        },
-    ));
-}
+// fn text_ui(mut commands: Commands) {
+//     commands.spawn((
+//         Text::new("Test"),
+//         Node {
+//             position_type: PositionType::Absolute,
+//             bottom: Val::Px(50.0),
+//             left: Val::Px(50.0),
+//             ..default()
+//         },
+//     ));
+// }
 
-fn spawn_timer(mut commands: Commands) {
-    let mut rng = rand::thread_rng();
-    commands.insert_resource(Wind {
-        timer: Timer::new(Duration::from_secs_f32(0.1), TimerMode::Repeating),
-        perlin_x: PerlinNoise::new(),
-        perlin_y: PerlinNoise::new(),
-        //offset: Vec2::ZERO,
-        offset: Vec2::new(
-            rng.gen_range::<f32>(0.0, 1.0),
-            rng.gen_range::<f32>(0.0, 1.0),
-        ),
-        scale: 1000.0,
-    });
-}
 
-fn spawn_gauge(mut commands: Commands) {
+fn setup(mut commands: Commands) {
     let color = Color::hsla(180., 0.95, 0.7, 0.08);
 
     for y in -10..10 {
@@ -90,16 +66,13 @@ fn spawn_gauge(mut commands: Commands) {
     }
 }
 
-fn update_wind(
+fn update_with_wind(
     mut gauge: Query<&mut Gauge>,
     //mut text: Single<&mut Text>,
-    mut wind: ResMut<Wind>,
-    time: Res<Time>,
+    wind: Res<Wind>,
 ) {
-    wind.timer.tick(time.delta());
     if wind.timer.just_finished() {
-        wind.offset += Vec2::new(0.01, 0.01);
-        for (mut gauge) in gauge.iter_mut() {
+        for mut gauge in gauge.iter_mut() {
             let projected_x_pos = (gauge.pos.x / wind.scale) as f64;
             let projected_y_pos = (gauge.pos.y / wind.scale) as f64;
 

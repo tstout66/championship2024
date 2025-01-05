@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::gauge::{Wind};
+use crate::wind::Wind;
 
 pub struct BoatPlugin;
 
@@ -66,7 +66,7 @@ fn wind_effects(
 }
 
 fn sail_control (
-    mut boat_sail_transform: Query<&mut Transform, With<(BoatSail)>>,
+    mut boat_sail_transform: Query<&mut Transform, With<BoatSail>>,
     keys: Res<ButtonInput<KeyCode>>,
 ) {
 

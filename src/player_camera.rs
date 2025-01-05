@@ -1,16 +1,14 @@
 ﻿use bevy::prelude::*;
 use crate::boat::Boat;
-use crate::gauge::Gauge;
 
 pub struct PlayerCameraPlugin;
 
 impl Plugin for PlayerCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_camera)
-            .add_systems(Update, follow)
+            .add_systems(Update, follow_boat)
         ;
     }
-
 }
 
 #[derive(Component)]
@@ -25,21 +23,7 @@ fn spawn_camera(
     ));
 }
 
-fn movement(
-    mut camera_transform: Query<&mut Transform, Or<(With<PlayerCamera>, With<Gauge>)>>,
-    keys: Res<ButtonInput<KeyCode>>,
-) {
-
-    
-    if keys.pressed(KeyCode::KeyW){
-        for mut camera_transform in camera_transform.iter_mut() {
-            camera_transform.translation.y += 1.0;
-        }
-
-    }
-}
-
-fn follow (
+fn follow_boat (
     mut camera_transform: Query<&mut Transform, With<PlayerCamera>>,
     boat: Query<&Transform, (With<Boat>, Without<PlayerCamera>)>,
     keys: Res<ButtonInput<KeyCode>>,
