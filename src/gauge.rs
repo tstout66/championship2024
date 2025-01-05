@@ -17,7 +17,8 @@ impl Plugin for GaugePlugin {
 }
 
 
-#[derive(Component)]
+#[derive(Component, Default)]
+#[require(Sprite)]
 pub struct Gauge {
     pub pos: Vec2,
     pub wind_vec: Vec2,

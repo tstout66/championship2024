@@ -10,9 +10,11 @@ impl Plugin for BoatPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(Sprite)]
-pub struct Boat;
+pub struct Boat {
+    pub speed: f32,
+}
 
 #[derive(Component)]
 #[require(Sprite)]
@@ -21,7 +23,9 @@ pub struct BoatSail;
 fn setup(mut commands: Commands) {
     let color = Color::WHITE;
     commands.spawn((
-        Boat,
+        Boat{
+           speed: 0.0, 
+        },
         Transform::from_xyz(0., 0., 0.),
         Sprite {
             color: Color::WHITE.with_alpha(0.5),
@@ -30,6 +34,16 @@ fn setup(mut commands: Commands) {
         },
     ))
         .with_children(|parent| {
+            // Nose of boat
+            parent.spawn((
+                Sprite {
+                    color,
+                    custom_size: Some(Vec2::new(5.0,5.0)),
+                    ..default()
+                },
+                Transform::from_xyz(0., 20., 0.),
+            ));
+            // Boat Sail
             parent.spawn((
                 BoatSail,
                 Sprite {
@@ -41,6 +55,30 @@ fn setup(mut commands: Commands) {
             ));
         });
 }
+
+// TODO: Make for environment objects like wind debris
+// fn wind_effects(
+//     mut boats: Query<&mut Transform, With<Boat>>,
+//     wind: Res<Wind>,
+// ) {
+//     if wind.timer.just_finished() {
+//         for mut boat in boats.iter_mut() {
+//             let projected_x_pos = (boat.translation.x / wind.scale) as f64;
+//             let projected_y_pos = (boat.translation.y / wind.scale) as f64;
+// 
+//             boat.translation.x += (wind.perlin_x.get2d([
+//                 projected_x_pos + wind.offset.x as f64,
+//                 projected_y_pos + wind.offset.y as f64,
+//             ]) as f32
+//                 - 0.5) * 10.0;
+//             boat.translation.y += (wind.perlin_y.get2d([
+//                 projected_x_pos + wind.offset.x as f64,
+//                 projected_y_pos + wind.offset.y as f64,
+//             ]) as f32
+//                 - 0.5) * 10.0;
+//         }
+//     }
+// }
 
 fn wind_effects(
     mut boats: Query<&mut Transform, With<Boat>>,

@@ -1,11 +1,13 @@
 ﻿use bevy::prelude::*;
 use crate::boat::Boat;
 
+const CAMERA_DECAY_RATE: f32 = 1.;
+
 pub struct PlayerCameraPlugin;
 
 impl Plugin for PlayerCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_camera)
+        app.add_systems(Startup, setup)
             .add_systems(Update, follow_boat)
         ;
     }
@@ -14,7 +16,7 @@ impl Plugin for PlayerCameraPlugin {
 #[derive(Component)]
 pub struct PlayerCamera;
 
-fn spawn_camera(
+fn setup(
     mut commands: Commands,
 ) {
     commands.spawn((
@@ -26,14 +28,17 @@ fn spawn_camera(
 fn follow_boat (
     mut camera_transform: Query<&mut Transform, With<PlayerCamera>>,
     boat: Query<&Transform, (With<Boat>, Without<PlayerCamera>)>,
-    keys: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
 ) {
-    
-    if keys.pressed(KeyCode::KeyW){
-        let boat_transform = boat.single();
-        for mut camera_transform in camera_transform.iter_mut() {
-            camera_transform.translation.y = boat_transform.translation.y;
-            camera_transform.translation.x = boat_transform.translation.x;
-        }
+    let boat_transform = boat.single();
+    for mut camera_transform in camera_transform.iter_mut() {
+        let Vec3 { x, y, .. } = boat_transform.translation;
+        let new_target = Vec3::new(x, y, camera_transform.translation.z);
+        camera_transform.translation.smooth_nudge(
+            &new_target,
+            CAMERA_DECAY_RATE,
+            time.delta_secs()
+        )
     }
+    
 }
