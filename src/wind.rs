@@ -43,6 +43,6 @@ fn setup(mut commands: Commands) {
 fn update(time: Res<Time>, mut wind: ResMut<Wind>) {
     wind.timer.tick(time.delta());
     if wind.timer.just_finished() {
-        wind.offset += Vec2::new(0.001, 0.001);
+        wind.offset += Vec2::new(0.01, 0.01);
     }
 }

@@ -40,5 +40,4 @@ fn follow_boat (
             time.delta_secs()
         )
     }
-    
 }
